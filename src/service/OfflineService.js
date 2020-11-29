@@ -6,6 +6,7 @@ export default class OfflineService {
    * @param {function} progressCallback
    */
   static async importYdk(file, progressCallback) {
+    const parser = new YdkParser();
     const reader = new FileReader();
     /** @type {ProgressEvent} */
     const progressEvent = await new Promise((resolve, reject) => {
@@ -19,8 +20,6 @@ export default class OfflineService {
       reader.readAsText(file, "UTF-8");
     });
 
-    const parser = new YdkParser();
-    const ydkList = parser.parse(progressEvent.target.result).end();
-    return ydkList.map((item) => item.id);
+    return parser.parse(progressEvent.target.result).end();
   }
 }

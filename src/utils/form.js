@@ -1,7 +1,7 @@
 /**
  * @param {Event} submitEvent
  */
-export function collectFormDataFromEvent(submitEvent) {
+export function getFormDataFromEvent(submitEvent) {
   /** @type HTMLElement[] */
   const elements = [...submitEvent.target.elements];
   let formData = {};
