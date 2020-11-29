@@ -1,13 +1,19 @@
 import { useMemo, useState } from "react";
 import { getFormDataFromEvent } from "../utils/form";
-import { CardsViewer } from "./CardsViewer";
+import CardActions from "./CardActions";
+import CardsViewer from "./CardsViewer";
 
 /**
  * @typedef {import('../model/CardCollectionItem').CardCollectionItem} CardCollectionItem
  */
 
 /** @param {{cards: CardCollectionItem[], onRemove?: function}} */
-export default function CollectionViewer({ cards, onRemove }) {
+export default function CollectionViewer({
+  cards,
+  onRemove,
+  onIncrement,
+  onDecrement,
+}) {
   const [term, setTerm] = useState("");
 
   const termTokens = useMemo(
@@ -50,17 +56,15 @@ export default function CollectionViewer({ cards, onRemove }) {
           <input type="text" name="searchTerm" />
         </label>
       </form>
-      <CardsViewer
-        cards={filteredCards}
-        actionElement={<CardAction onRemove={handleRemove} />}
-      />
+      <CardsViewer cards={filteredCards}>
+        <CardsViewer.Child name="action">
+          <CardActions
+            onRemove={handleRemove}
+            onIncrement={onIncrement}
+            onDecrement={onDecrement}
+          />
+        </CardsViewer.Child>
+      </CardsViewer>
     </>
-  );
-}
-function CardAction({ card, onRemove }) {
-  return (
-    <div>
-      <button onClick={() => onRemove(card.id)}>X</button>
-    </div>
   );
 }

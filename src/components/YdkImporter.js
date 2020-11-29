@@ -3,15 +3,17 @@ import { mergeCardCollections } from "../model/CardCollectionItem";
 import OfflineService from "../service/OfflineService";
 import YgoService from "../service/YgoService";
 import { getFormDataFromEvent } from "../utils/form";
-import { CardsViewer } from "./CardsViewer";
+import CardsViewer from "./CardsViewer";
+import CardActions from "./CardActions";
 
 /**
- * @typedef {'append' | 'remove' | 'clean'} ImportActionType
+ * @typedef {'append' | 'remove' | 'clean' | 'increment' | 'decrement'} ImportActionType
  * @typedef {{type: ImportActionType, payload: object}} ImportAction
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
  */
 
 export default function YdkImporter({ onSubmit }) {
+  // for form reset
   const [formKey, setFormKey] = useState(Date.now());
 
   /** @type {[CardCollectionItem[], (action: ImportAction)]} */
@@ -40,6 +42,22 @@ export default function YdkImporter({ onSubmit }) {
     }
   }
 
+  /** @param {Event} e */
+  function handleClear(e) {
+    e.preventDefault();
+    dispatch({ type: "clean", payload: {} });
+  }
+
+  function handleIncrement(id) {
+    dispatch({ type: "increment", payload: { id } });
+  }
+  function handleDecrement(id) {
+    dispatch({ type: "decrement", payload: { id } });
+  }
+  function handleRemove(id) {
+    dispatch({ type: "remove", payload: { id } });
+  }
+
   function cleanForm() {
     setFormKey(Date.now());
   }
@@ -56,26 +74,24 @@ export default function YdkImporter({ onSubmit }) {
       {cardsItems.length ? (
         <>
           {onSubmit ? (
-            <form onSubmit={handleSubmitImport}>
+            <form onSubmit={handleSubmitImport} onReset={handleClear}>
               <button type="submit">Import</button>
+              <button type="reset">Clear</button>
             </form>
           ) : null}
-          <CardsViewer
-            cards={cardsItems}
-            actionElement={
-              <CardAction
-                onRemove={(id) => dispatch({ type: "remove", payload: { id } })}
+          <CardsViewer cards={cardsItems}>
+            <CardsViewer.Child name="action">
+              <CardActions
+                onIncrement={handleIncrement}
+                onDecrement={handleDecrement}
+                onRemove={handleRemove}
               />
-            }
-          />
+            </CardsViewer.Child>
+          </CardsViewer>
         </>
       ) : null}
     </div>
   );
-}
-
-function CardAction({ card, onRemove }) {
-  return <button onClick={() => onRemove(card.id)}>X</button>;
 }
 
 /**
@@ -85,6 +101,48 @@ function importReducer(state, action) {
   switch (action.type) {
     case "clean": {
       return [];
+    }
+
+    case "increment": {
+      const itemIndex = state.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (itemIndex < 0) {
+        console.warn(`Could not find item with id '${action.payload.id}'.`);
+        return state;
+      }
+
+      let item = state[itemIndex];
+      item = { ...item, qty: item.qty + 1 };
+
+      const beforeItem = state.slice(0, itemIndex);
+      const afterItem = state.slice(itemIndex + 1);
+      return [...beforeItem, item, ...afterItem];
+    }
+
+    case "decrement": {
+      const itemIndex = state.findIndex(
+        (item) => item.id === action.payload.id
+      );
+      if (itemIndex < 0) {
+        console.warn(`Could not find item with id '${action.payload.id}'.`);
+        return state;
+      }
+      let item = state[itemIndex];
+      item = { ...item, qty: item.qty - 1 };
+
+      // remove if zero
+      if (item.qty === 0) {
+        return importReducer(state, {
+          type: "remove",
+          payload: action.payload,
+        });
+      }
+
+      const beforeItem = state.slice(0, itemIndex);
+      const afterItem = state.slice(itemIndex + 1);
+      return [...beforeItem, item, ...afterItem];
     }
     case "append": {
       return mergeCardCollections(state, action.payload.list);

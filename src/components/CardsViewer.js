@@ -1,11 +1,13 @@
 import { cloneElement, memo } from "react";
+import { Child, useChildren } from "./NamedChildren";
 
 /**
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
  */
 
-/** @param {CardCollectionItem[]} cards */
-export function CardsViewer({ cards, actionElement }) {
+/** @param {{cards: CardCollectionItem[], children: React.ReactChildren}} */
+export default function CardsViewer({ cards, children }) {
+  const { action: actionElement } = useChildren(children);
   return (
     <ul>
       {cards.map(({ id, card, qty }) => (
@@ -19,15 +21,11 @@ export function CardsViewer({ cards, actionElement }) {
             {card.name}
           </a>{" "}
           ({qty})
-          {actionElement ? (
-            <CardAction card={{ id, card, qty }}>{actionElement}</CardAction>
-          ) : null}
+          {actionElement &&
+            cloneElement(actionElement, { card: { id, card, qty } })}
         </li>
       ))}
     </ul>
   );
 }
-
-const CardAction = memo(({ children, card }) => {
-  return cloneElement(children, { card });
-});
+CardsViewer.Child = Child;
