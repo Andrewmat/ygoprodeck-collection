@@ -1,4 +1,4 @@
-import { cloneElement, memo } from "react";
+import { cloneElement } from "react";
 import { Child, useChildren } from "./NamedChildren";
 
 /**
