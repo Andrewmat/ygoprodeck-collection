@@ -2,7 +2,7 @@ import genericParser from "_/utils/parser/GenericParser";
 
 /**
  * @typedef {{id: number, qty: number}} ydkItem
- * @typedef {import("./GenericParser").GenericParser<ydkItem>} YdkParser
+ * @typedef {import("./GenericParser").GenericParser<ydkItem, {}>} YdkParser
  */
 
 /** @returns {YdkParser} */
