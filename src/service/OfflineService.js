@@ -1,12 +1,33 @@
-import YdkParser from "_/utils/YdkParser";
+import csvParser from "_/utils/parser/CsvParser";
+import ydkParser from "_/utils/parser/ydkParser";
 
 /**
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
  */
+
 export default class OfflineService {
   /** @param {File} file @param {EventListenerObject=} progressCallback */
   static async importYdk(file, progressCallback) {
-    const parser = new YdkParser();
+    const parser = ydkParser();
+    const reader = new FileReader();
+    /** @type {ProgressEvent} */
+    const progressEvent = await new Promise((resolve, reject) => {
+      reader.addEventListener("loadend", resolve);
+      reader.addEventListener("abort", reject);
+      reader.addEventListener("error", reject);
+      if (progressCallback != null) {
+        reader.addEventListener("progress", progressCallback);
+      }
+
+      reader.readAsText(file, "UTF-8");
+    });
+
+    return parser.parse(progressEvent.target.result).end();
+  }
+
+  /** @param {File} file @param {EventListenerObject=} progressCallback */
+  static async importCsv(file, progressCallback) {
+    const parser = csvParser();
     const reader = new FileReader();
     /** @type {ProgressEvent} */
     const progressEvent = await new Promise((resolve, reject) => {

@@ -1,5 +1,5 @@
 import { useReducer, useState } from "react";
-import YdkImporter from "_/components/YdkImporter";
+import Importer from "_/components/Importer";
 import CollectionViewer from "_/components/CollectionViewer";
 import { mergeCardCollections } from "_/model/CardCollectionItem";
 import { replace } from "_/utils/arrays";
@@ -27,7 +27,7 @@ export default function CollectionManager() {
         {showImport ? "Go back to Collection" : "Import"}
       </button>
       {showImport ? (
-        <YdkImporter onSubmit={handleImport} />
+        <Importer onSubmit={handleImport} />
       ) : (
         <>
           <CollectionViewer

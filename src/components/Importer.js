@@ -14,7 +14,7 @@ import { replace } from "_/utils/arrays";
  * @typedef {import("../model/Form").SubmitEventHandler} SubmitEventHandler
  */
 
-export default function YdkImporter({ onSubmit }) {
+export default function Importer({ onSubmit }) {
   // for form reset
   const [formKey, setFormKey] = useState(Date.now());
 
@@ -28,8 +28,16 @@ export default function YdkImporter({ onSubmit }) {
     /** @type {{ydkFile?: FileList}} */
     const { ydkFile } = getFormDataFromEvent(e);
     cleanForm();
-    const ydkImport = await OfflineService.importYdk(ydkFile[0]);
-    const cardsData = await YgoService.fetchCardsCollectionData(ydkImport);
+    const file = ydkFile[0];
+
+    let cardsData;
+    if (file.type === "text/csv") {
+      const csvImport = await OfflineService.importCsv(file);
+      cardsData = await YgoService.fetchCardsCollectionData(csvImport);
+    } else {
+      const ydkImport = await OfflineService.importYdk(file);
+      cardsData = await YgoService.fetchCardsCollectionData(ydkImport);
+    }
     dispatch({
       type: "append",
       payload: { list: cardsData },

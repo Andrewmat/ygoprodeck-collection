@@ -4,7 +4,7 @@ import { formatCardCollectionItem } from "_/model/CardCollectionItem";
 /**
  * @typedef {import("../model/Card").Card} Card
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
- * @typedef {import("../utils/YdkParser").YdkItem} YdkItem
+ * @typedef {import("../utils/parser/ydkParser").ydkItem} YdkItem
  */
 
 export default class YgoService {
@@ -13,12 +13,15 @@ export default class YgoService {
    * @returns {Promise<Card[]>}
    * */
   static async fetchCardsByIds(listIds) {
-    const distinctListIds = [...new Set(listIds)];
+    const distinctListIds = [...new Set(listIds)]
+      .map((v) => String(v))
+      .join(",");
+
     const endpointUrl = new URL(
       "https://db.ygoprodeck.com/api/v7/cardinfo.php"
     );
     endpointUrl.searchParams.set("id", distinctListIds);
-    const response = await fetch(endpointUrl);
+    const response = await fetch(String(endpointUrl));
     if (!response.ok) {
       throw Error(
         `[YgoproService.getCardsByIds] (${response.status}) ${response.statusText}`
