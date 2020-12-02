@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import OfflineService from "_/service/OfflineService";
 import { getFormDataFromEvent } from "../utils/form";
 import CardActions from "./CardActions";
 import CardsViewer from "./CardsViewer";
@@ -7,7 +8,14 @@ import CardsViewer from "./CardsViewer";
  * @typedef {import('../model/CardCollectionItem').CardCollectionItem} CardCollectionItem
  */
 
-/** @param {{cards: CardCollectionItem[], onRemove?: function}} */
+/**
+ * @param {{
+ *   cards: CardCollectionItem[],
+ *   onRemove?: (id: number) => void,
+ *   onIncrement?: (id: number) => void,
+ *   onDecrement?: (id: number) => void
+ * }} param0
+ * */
 export default function CollectionViewer({
   cards,
   onRemove,
@@ -41,15 +49,19 @@ export default function CollectionViewer({
     }
   }
 
-  /** @param {Event} e */
+  /** @type {React.FormEventHandler<HTMLFormElement>} */
   function handleTermSearch(e) {
     e.preventDefault();
+    /** @type {{searchTerm?: string}} */
     const { searchTerm } = getFormDataFromEvent(e);
     setTerm(searchTerm);
   }
 
   return (
     <>
+      <button onClick={() => OfflineService.exportCsv(cards)}>
+        Export CSV
+      </button>
       <form onSubmit={handleTermSearch}>
         <label>
           Search:

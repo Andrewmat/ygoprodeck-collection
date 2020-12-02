@@ -1,4 +1,4 @@
-import CollectionManager from "./components/CollectionManager";
+import CollectionManager from "_/components/CollectionManager";
 
 function App() {
   return (

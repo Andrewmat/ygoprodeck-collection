@@ -6,12 +6,12 @@ export function Child({ name, children }) {
 
 /**
  *
- * @param {React.ReactChildren} children
- * @returns {{ [key: string]: React.ReactChildren }}
+ * @param {React.ReactChild} children
+ * @returns {{ [key: string]: React.ReactComponentElement}}
  */
 export function useChildren(children) {
   const namedChildrenEntries = Children.toArray(children)
-    .filter((child) => child.type === Child && child.props.name?.length)
+    .filter((child) => child?.type === Child && child?.props.name?.length)
     .map((child) => [child.props.name, child.props.children]);
 
   return Object.fromEntries(namedChildrenEntries);

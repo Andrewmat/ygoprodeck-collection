@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "checkJs": true,
+    "module": "esnext",
+    "target": "esnext",
+    "baseUrl": ".",
+    "jsx": "react",
+    "allowUmdGlobalAccess": true,
+    "paths": {
+      "_/*": ["./src/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
+}

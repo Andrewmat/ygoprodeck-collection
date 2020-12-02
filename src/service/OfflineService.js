@@ -1,10 +1,10 @@
-import YdkParser from "../utils/YdkParser";
+import YdkParser from "_/utils/YdkParser";
 
 /**
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
  */
 export default class OfflineService {
-  /** @param {File} file @param {function} progressCallback */
+  /** @param {File} file @param {EventListenerObject=} progressCallback */
   static async importYdk(file, progressCallback) {
     const parser = new YdkParser();
     const reader = new FileReader();
@@ -13,7 +13,7 @@ export default class OfflineService {
       reader.addEventListener("loadend", resolve);
       reader.addEventListener("abort", reject);
       reader.addEventListener("error", reject);
-      if (progressCallback) {
+      if (progressCallback != null) {
         reader.addEventListener("progress", progressCallback);
       }
 

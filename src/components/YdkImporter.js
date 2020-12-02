@@ -1,16 +1,17 @@
 import { useReducer, useState } from "react";
-import { mergeCardCollections } from "../model/CardCollectionItem";
-import OfflineService from "../service/OfflineService";
-import YgoService from "../service/YgoService";
-import { getFormDataFromEvent } from "../utils/form";
-import CardsViewer from "./CardsViewer";
-import CardActions from "./CardActions";
-import { replace } from "../utils/arrays";
+import { mergeCardCollections } from "_/model/CardCollectionItem";
+import CardsViewer from "_/components/CardsViewer";
+import CardActions from "_/components/CardActions";
+import OfflineService from "_/service/OfflineService";
+import YgoService from "_/service/YgoService";
+import { getFormDataFromEvent } from "_/utils/form";
+import { replace } from "_/utils/arrays";
 
 /**
  * @typedef {'append' | 'remove' | 'clean' | 'increment' | 'decrement'} ImportActionType
  * @typedef {{type: ImportActionType, payload: object}} ImportAction
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
+ * @typedef {import("../model/Form").SubmitEventHandler} SubmitEventHandler
  */
 
 export default function YdkImporter({ onSubmit }) {
@@ -20,11 +21,11 @@ export default function YdkImporter({ onSubmit }) {
   /** @type {[CardCollectionItem[], (action: ImportAction)]} */
   const [cardsItems, dispatch] = useReducer(importReducer, []);
 
-  /** @param {Event} e */
+  /** @param {React.FormEvent<HTMLFormElement>} e */
   async function handleFileUpload(e) {
     e.preventDefault();
 
-    /** @type {{ydkFile: File}} */
+    /** @type {{ydkFile?: FileList}} */
     const { ydkFile } = getFormDataFromEvent(e);
     cleanForm();
     const ydkImport = await OfflineService.importYdk(ydkFile[0]);
@@ -35,7 +36,7 @@ export default function YdkImporter({ onSubmit }) {
     });
   }
 
-  /** @param {Event} e */
+  /** @type {SubmitEventHandler} */
   function handleSubmitImport(e) {
     e.preventDefault();
     if (onSubmit) {
@@ -43,7 +44,7 @@ export default function YdkImporter({ onSubmit }) {
     }
   }
 
-  /** @param {Event} e */
+  /** @type {SubmitEventHandler} */
   function handleClear(e) {
     e.preventDefault();
     dispatch({ type: "clean", payload: {} });

@@ -1,11 +1,11 @@
 import { cloneElement } from "react";
-import { Child, useChildren } from "./NamedChildren";
+import { Child, useChildren } from "_/components/NamedChildren";
 
 /**
  * @typedef {import("../model/CardCollectionItem").CardCollectionItem} CardCollectionItem
  */
 
-/** @param {{cards: CardCollectionItem[], children: React.ReactChildren}} */
+/** @param {{cards: CardCollectionItem[], children: React.ReactChild}} */
 export default function CardsViewer({ cards, children }) {
   const { action: actionElement } = useChildren(children);
   return (
@@ -28,4 +28,6 @@ export default function CardsViewer({ cards, children }) {
     </ul>
   );
 }
+
+/** @type {React.ComponentType<{name: 'action'}>} */
 CardsViewer.Child = Child;

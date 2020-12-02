@@ -1,9 +1,8 @@
 import { useReducer, useState } from "react";
-import YdkImporter from "./YdkImporter";
-import CollectionViewer from "./CollectionViewer";
-import { mergeCardCollections } from "../model/CardCollectionItem";
-import { replace } from "../utils/arrays";
-import OfflineService from "../service/OfflineService";
+import YdkImporter from "_/components/YdkImporter";
+import CollectionViewer from "_/components/CollectionViewer";
+import { mergeCardCollections } from "_/model/CardCollectionItem";
+import { replace } from "_/utils/arrays";
 
 /**
  * @typedef {'append' | 'remove' | 'increment' | 'decrement'} CollectionActionType
@@ -16,6 +15,7 @@ export default function CollectionManager() {
   const [showImport, setShowImport] = useState(false);
   const [collection, dispatch] = useReducer(collectionReducer, { cards: [] });
 
+  /** @param {CardCollectionItem[]} newCards */
   function handleImport(newCards) {
     dispatch({ type: "append", payload: { list: newCards } });
     setShowImport(false);
@@ -24,10 +24,7 @@ export default function CollectionManager() {
   return (
     <div>
       <button type="button" onClick={() => setShowImport((v) => !v)}>
-        {showImport ? "Go back to Collection" : "Import YDK"}
-      </button>
-      <button onClick={() => OfflineService.exportCsv(collection.cards)}>
-        Export CSV
+        {showImport ? "Go back to Collection" : "Import"}
       </button>
       {showImport ? (
         <YdkImporter onSubmit={handleImport} />

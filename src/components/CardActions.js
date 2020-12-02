@@ -4,11 +4,11 @@
 
 /**
  * @param {{
- *   card: CardCollectionItem,
+ *   card?: CardCollectionItem,
  *   onIncrement?: (id: number) => void,
  *   onDecrement?: (id: number) => void,
  *   onRemove?: (id: number) => void,
- * }}
+ * }} param0
  * */
 export default function CardActions({
   card,
@@ -16,6 +16,9 @@ export default function CardActions({
   onDecrement,
   onRemove,
 }) {
+  if (card == null) {
+    return null;
+  }
   return (
     <>
       {onDecrement && (

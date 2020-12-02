@@ -1,5 +1,5 @@
-import { formatToCard } from "../model/Card";
-import { formatCardCollectionItem } from "../model/CardCollectionItem";
+import { formatToCard } from "_/model/Card";
+import { formatCardCollectionItem } from "_/model/CardCollectionItem";
 
 /**
  * @typedef {import("../model/Card").Card} Card
