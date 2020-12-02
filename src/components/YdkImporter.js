@@ -5,6 +5,7 @@ import YgoService from "../service/YgoService";
 import { getFormDataFromEvent } from "../utils/form";
 import CardsViewer from "./CardsViewer";
 import CardActions from "./CardActions";
+import { replace } from "../utils/arrays";
 
 /**
  * @typedef {'append' | 'remove' | 'clean' | 'increment' | 'decrement'} ImportActionType
@@ -107,7 +108,6 @@ function importReducer(state, action) {
       const itemIndex = state.findIndex(
         (item) => item.id === action.payload.id
       );
-
       if (itemIndex < 0) {
         console.warn(`Could not find item with id '${action.payload.id}'.`);
         return state;
@@ -116,9 +116,7 @@ function importReducer(state, action) {
       let item = state[itemIndex];
       item = { ...item, qty: item.qty + 1 };
 
-      const beforeItem = state.slice(0, itemIndex);
-      const afterItem = state.slice(itemIndex + 1);
-      return [...beforeItem, item, ...afterItem];
+      return replace(state, itemIndex, item);
     }
 
     case "decrement": {
@@ -140,9 +138,7 @@ function importReducer(state, action) {
         });
       }
 
-      const beforeItem = state.slice(0, itemIndex);
-      const afterItem = state.slice(itemIndex + 1);
-      return [...beforeItem, item, ...afterItem];
+      return replace(state, itemIndex, item);
     }
     case "append": {
       return mergeCardCollections(state, action.payload.list);

@@ -2,6 +2,8 @@ import { useReducer, useState } from "react";
 import YdkImporter from "./YdkImporter";
 import CollectionViewer from "./CollectionViewer";
 import { mergeCardCollections } from "../model/CardCollectionItem";
+import { replace } from "../utils/arrays";
+import OfflineService from "../service/OfflineService";
 
 /**
  * @typedef {'append' | 'remove' | 'increment' | 'decrement'} CollectionActionType
@@ -11,8 +13,8 @@ import { mergeCardCollections } from "../model/CardCollectionItem";
  */
 
 export default function CollectionManager() {
-  const [collection, dispatch] = useReducer(collectionReducer, { cards: [] });
   const [showImport, setShowImport] = useState(false);
+  const [collection, dispatch] = useReducer(collectionReducer, { cards: [] });
 
   function handleImport(newCards) {
     dispatch({ type: "append", payload: { list: newCards } });
@@ -24,15 +26,24 @@ export default function CollectionManager() {
       <button type="button" onClick={() => setShowImport((v) => !v)}>
         {showImport ? "Go back to Collection" : "Import YDK"}
       </button>
+      <button onClick={() => OfflineService.exportCsv(collection.cards)}>
+        Export CSV
+      </button>
       {showImport ? (
         <YdkImporter onSubmit={handleImport} />
       ) : (
-        <CollectionViewer
-          cards={collection.cards}
-          onRemove={(id) => dispatch({ type: "remove", payload: { id } })}
-          onIncrement={(id) => dispatch({ type: "increment", payload: { id } })}
-          onDecrement={(id) => dispatch({ type: "decrement", payload: { id } })}
-        />
+        <>
+          <CollectionViewer
+            cards={collection.cards}
+            onRemove={(id) => dispatch({ type: "remove", payload: { id } })}
+            onIncrement={(id) =>
+              dispatch({ type: "increment", payload: { id } })
+            }
+            onDecrement={(id) =>
+              dispatch({ type: "decrement", payload: { id } })
+            }
+          />
+        </>
       )}
     </div>
   );
@@ -55,39 +66,36 @@ function collectionReducer(state, action) {
       };
     }
     case "increment": {
-      const itemIndex = state.cards.findIndex(
+      const index = state.cards.findIndex(
         (item) => item.id === action.payload.id
       );
-
-      if (itemIndex < 0) {
+      if (index < 0) {
         console.warn(`Could not find item with id '${action.payload.id}'.`);
         return state;
       }
-
-      let item = state.cards[itemIndex];
+      let item = state.cards[index];
       item = { ...item, qty: item.qty + 1 };
-
-      const beforeItem = state.cards.slice(0, itemIndex);
-      const afterItem = state.cards.slice(itemIndex + 1);
-      return { ...state, cards: [...beforeItem, item, ...afterItem] };
+      return {
+        ...state,
+        cards: replace(state.cards, index, item),
+      };
     }
     case "decrement": {
-      const itemIndex = state.cards.findIndex(
+      const index = state.cards.findIndex(
         (item) => item.id === action.payload.id
       );
-
-      if (itemIndex < 0) {
+      if (index < 0) {
         console.warn(`Could not find item with id '${action.payload.id}'.`);
         return state;
       }
-
-      let item = state.cards[itemIndex];
+      let item = state.cards[index];
       item = { ...item, qty: item.qty === 0 ? item.qty : item.qty - 1 };
-
-      const beforeItem = state.cards.slice(0, itemIndex);
-      const afterItem = state.cards.slice(itemIndex + 1);
-      return { ...state, cards: [...beforeItem, item, ...afterItem] };
+      return {
+        ...state,
+        cards: replace(state.cards, index, item),
+      };
     }
+
     default: {
       throw Error(`Unexpected action type ${action.type}`);
     }
