@@ -6,6 +6,8 @@ import OfflineService from "_/service/OfflineService";
 import YgoService from "_/service/YgoService";
 import { getFormDataFromEvent } from "_/utils/form";
 import { replace } from "_/utils/arrays";
+import { Link, navigate } from "@reach/router";
+import { useAppend } from "_/model/data/collection";
 
 /**
  * @typedef {'append' | 'remove' | 'clean' | 'increment' | 'decrement'} ImportActionType
@@ -14,12 +16,14 @@ import { replace } from "_/utils/arrays";
  * @typedef {import("../model/Form").SubmitEventHandler} SubmitEventHandler
  */
 
-export default function Importer({ onSubmit }) {
+export default function Importer() {
   // for form reset
   const [formKey, setFormKey] = useState(Date.now());
 
-  /** @type {[CardCollectionItem[], (action: ImportAction)]} */
+  /** @type {[CardCollectionItem[], (action: ImportAction) => void]} */
   const [cardsItems, dispatch] = useReducer(importReducer, []);
+
+  const append = useAppend();
 
   /** @param {React.FormEvent<HTMLFormElement>} e */
   async function handleFileUpload(e) {
@@ -27,29 +31,21 @@ export default function Importer({ onSubmit }) {
 
     /** @type {{ydkFile?: FileList}} */
     const { ydkFile } = getFormDataFromEvent(e);
-    cleanForm();
-    const file = ydkFile[0];
 
-    let cardsData;
-    if (file.type === "text/csv") {
-      const csvImport = await OfflineService.importCsv(file);
-      cardsData = await YgoService.fetchCardsCollectionData(csvImport);
-    } else {
-      const ydkImport = await OfflineService.importYdk(file);
-      cardsData = await YgoService.fetchCardsCollectionData(ydkImport);
-    }
     dispatch({
       type: "append",
-      payload: { list: cardsData },
+      payload: { list: await fetchDataFromFile(ydkFile) },
     });
+
+    // clear form state
+    setFormKey(Date.now());
   }
 
   /** @type {SubmitEventHandler} */
   function handleSubmitImport(e) {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit(cardsItems);
-    }
+    append(cardsItems);
+    navigate("/");
   }
 
   /** @type {SubmitEventHandler} */
@@ -58,22 +54,9 @@ export default function Importer({ onSubmit }) {
     dispatch({ type: "clean", payload: {} });
   }
 
-  function handleIncrement(id) {
-    dispatch({ type: "increment", payload: { id } });
-  }
-  function handleDecrement(id) {
-    dispatch({ type: "decrement", payload: { id } });
-  }
-  function handleRemove(id) {
-    dispatch({ type: "remove", payload: { id } });
-  }
-
-  function cleanForm() {
-    setFormKey(Date.now());
-  }
-
   return (
     <div className="ydk-importer">
+      <Link to="/">Go back</Link>
       <form onSubmit={handleFileUpload} key={formKey}>
         <input
           type="file"
@@ -83,18 +66,20 @@ export default function Importer({ onSubmit }) {
       </form>
       {cardsItems.length ? (
         <>
-          {onSubmit ? (
-            <form onSubmit={handleSubmitImport} onReset={handleClear}>
-              <button type="submit">Import</button>
-              <button type="reset">Clear</button>
-            </form>
-          ) : null}
+          <form onSubmit={handleSubmitImport} onReset={handleClear}>
+            <button type="submit">Import</button>
+            <button type="reset">Clear</button>
+          </form>
           <CardsViewer cards={cardsItems}>
             <CardsViewer.Child name="action">
               <CardActions
-                onIncrement={handleIncrement}
-                onDecrement={handleDecrement}
-                onRemove={handleRemove}
+                onIncrement={(id) =>
+                  dispatch({ type: "increment", payload: { id } })
+                }
+                onDecrement={(id) =>
+                  dispatch({ type: "decrement", payload: { id } })
+                }
+                onRemove={(id) => dispatch({ type: "remove", payload: { id } })}
               />
             </CardsViewer.Child>
           </CardsViewer>
@@ -102,6 +87,19 @@ export default function Importer({ onSubmit }) {
       ) : null}
     </div>
   );
+}
+
+async function fetchDataFromFile(files) {
+  const file = files[0];
+  let cardsData;
+  if (file.type === "text/csv") {
+    const csvImport = await OfflineService.importCsv(file);
+    cardsData = await YgoService.fetchCardsCollectionData(csvImport);
+  } else {
+    const ydkImport = await OfflineService.importYdk(file);
+    cardsData = await YgoService.fetchCardsCollectionData(ydkImport);
+  }
+  return cardsData;
 }
 
 /**
